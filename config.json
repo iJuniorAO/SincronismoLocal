@@ -1,0 +1,13 @@
+{
+    "origem": "C:\\Users\\Downloads\\teste_local",
+    "destino": "C:\\Users\\Downloads\\teste_drive",
+    "tempo_espera_gravacao": 1.0,
+    "recursivo": true,
+    "ignorar_prefixos": [
+        "~$"
+    ],
+    "ignorar_extensoes": [
+        ".tmp",
+        ".crdownload"
+    ]
+}

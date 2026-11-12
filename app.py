@@ -1,11 +1,12 @@
-import os
-import sys
-import shutil
-import time
 import json
+import os
+import shutil
+import sys
+import time
 from datetime import datetime
-from watchdog.observers import Observer
+
 from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
 
 # Localiza o config.json na mesma pasta do script
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -24,6 +25,7 @@ def carregar_configuracao():
 CONFIG = carregar_configuracao()
 ORIGEM = CONFIG.get("origem")
 DESTINO = CONFIG.get("destino")
+DESTINO2 = CONFIG.get("destino2")
 TEMPO_ESPERA = CONFIG.get("tempo_espera_gravacao", 1.0)
 IGNORAR_PREFIXOS = tuple(CONFIG.get("ignorar_prefixos", ["~$"]))
 IGNORAR_EXTENSOES = tuple(CONFIG.get("ignorar_extensoes", [".tmp"]))
@@ -44,16 +46,28 @@ class HandlerRelatorios(FileSystemEventHandler):
             return
 
         caminho_relativo = os.path.relpath(src_path, ORIGEM)
-        caminho_destino = os.path.join(DESTINO, caminho_relativo)
 
-        os.makedirs(os.path.dirname(caminho_destino), exist_ok=True)
+        if DESTINO:
+            caminho_destino = os.path.join(DESTINO, caminho_relativo)
+            os.makedirs(os.path.dirname(caminho_destino), exist_ok=True)
 
-        try:
-            time.sleep(TEMPO_ESPERA)
-            shutil.copy2(src_path, caminho_destino)
-            log(f"[{tipo}] Atualizado no Drive: {nome_arquivo}")
-        except Exception as e:
-            log(f"[ERRO] Falha ao copiar {nome_arquivo}: {e}")
+            try:
+                time.sleep(TEMPO_ESPERA)
+                shutil.copy2(src_path, caminho_destino)
+                log(f"[{tipo}] Atualizado no Drive: {nome_arquivo}")
+            except Exception as e:
+                log(f"[ERRO] Falha ao copiar {nome_arquivo}: {e}")
+
+        if DESTINO2:
+            caminho_destino = os.path.join(DESTINO2, caminho_relativo)
+            os.makedirs(os.path.dirname(caminho_destino), exist_ok=True)
+
+            try:
+                time.sleep(TEMPO_ESPERA)
+                shutil.copy2(src_path, caminho_destino)
+                log(f"[{tipo}] Atualizado no Drive2: {nome_arquivo}")
+            except Exception as e:
+                log(f"[ERRO] Falha ao copiar {nome_arquivo}: {e}")
 
     def on_created(self, event):
         if not event.is_directory:
@@ -77,6 +91,9 @@ if __name__ == "__main__":
 
     log(f"Iniciando monitoramento em: {ORIGEM}")
     log(f"Destino configurado: {DESTINO}")
+    if DESTINO2:
+        log(f"Destino2 configurado: {DESTINO2}")
+
     observer.start()
 
     try:
